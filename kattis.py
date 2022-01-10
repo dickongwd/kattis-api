@@ -4,8 +4,8 @@ import requests
 from base64 import b64decode
 from bs4 import BeautifulSoup
 
-# For weak certificates. Comment if not needed.
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = "ALL:@SECLEVEL=1"
+# For weak certificates. Uncomment if needed.
+# requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = "ALL:@SECLEVEL=1"
 
 LOGIN_URL = "https://open.kattis.com/login/email"
 USER_CREDENTIALS = {
