@@ -14,3 +14,9 @@ In `~/.bashrc`:
 export KATTIS_USER = "<username>"
 export KATTIS_PASS = "<base64_encoded_password>"
 ```
+
+Install required dependencies in `requirements.txt`:
+
+```
+pip install -r requirements.txt
+```
