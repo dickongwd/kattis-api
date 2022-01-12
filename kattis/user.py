@@ -2,7 +2,7 @@ import requests
 
 from typing import Tuple
 
-from .utils import get_csrf_token, get_rank_score
+from .doc_parser import get_csrf_token, get_rank_score
 from .constants import KATTIS_URL
 
 

@@ -1,3 +1,11 @@
+"""
+kattis.doc_parser
+-----------------
+
+This module provides helper functions for parsing of the HTML document
+obtained from scraping the Kattis site.
+"""
+
 from bs4 import BeautifulSoup
 from typing import Tuple
 
@@ -21,7 +29,7 @@ def get_csrf_token(html_doc: str) -> str:
 
 
 def get_rank_score(html_doc: str) -> Tuple[int, float]:
-    """Parses a HTML document string to obtain the rank and score of the Kattis user.
+    """Parses a HTML document string to obtain the rank and score of the user.
 
     The table holding the rank and score is assumed to be of the form:
         <div class="rank clearfix">
