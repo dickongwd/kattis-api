@@ -18,15 +18,14 @@ def main():
     all_problems = user.solved_problems()
     print('Done!')
 
-    total = 0
     print('Writing to file...')
     with open('solve.txt', 'w') as fp:
         for data in all_problems:
-            total += data['difficulty']
             fp.write(str(data))
             fp.write('\n')
     print('All done!')
-    print(total)
+
+
 
 
 if __name__ == '__main__':
