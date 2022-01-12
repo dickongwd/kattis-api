@@ -9,12 +9,20 @@ import re
 
 from bs4 import BeautifulSoup
 from typing import Tuple, TypedDict, List
+from datetime import datetime
 
 
 class ProblemData(TypedDict):
     id: str
     name: str
     difficulty: float
+    solve_date: str
+
+
+class SubmissionData(TypedDict):
+    id: int
+    date: datetime
+    accepted: bool
 
 
 def get_csrf_token(html_doc: str) -> str:
@@ -107,6 +115,39 @@ def get_page_problems(html_doc: str) -> List[ProblemData]:
         problem_list.append({
             'id': id,
             'name': name,
-            'difficulty': difficulty
+            'difficulty': difficulty,
+            'solve_date': ''
         })
     return problem_list
+
+
+# TODO: type annotation for return
+def get_page_submissions(html_doc: str) -> List[SubmissionData]:
+    """Parses a HTML document string to obtain submission data for a problem.
+
+    Table holding submissions data is assumed to have:
+        <table class="table-submissions ...">
+    Schema for the table is:
+        (ID, DATE, PROBLEM, STATUS, CPU, LANG)
+
+    Args:
+        problem_id: the problem ID to query
+    """
+    soup = BeautifulSoup(html_doc, 'html.parser')
+    table_body = soup.find('table', class_='table-submissions').find('tbody')
+    rows = table_body.find_all('tr')
+
+    submissions = []
+    for row in rows:
+        # Get submission stats
+        row_data = list(row.stripped_strings)
+        id = row_data[0]
+        date = datetime.fromisoformat(row_data[1])
+        accepted = True if 'Accepted' in row_data[3] else False
+
+        submissions.append({
+            'id': id,
+            'date': date,
+            'accepted': accepted
+        })
+    return submissions
