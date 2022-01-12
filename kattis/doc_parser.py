@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from typing import Tuple, TypedDict, List
 
 
-class ProblemInfo(TypedDict):
+class ProblemData(TypedDict):
     id: str
     name: str
     difficulty: float
@@ -72,7 +72,7 @@ def get_rank_score(html_doc: str) -> Tuple[int, float]:
     return int(strings[2]), float(strings[3])
 
 
-def get_page_problems(html_doc: str) -> List[ProblemInfo]:
+def get_page_problems(html_doc: str) -> List[ProblemData]:
     """Parses a HTML document string to obtain the displayed list of problems.
     
     The table holding the list of problems is assumed to have:
@@ -84,7 +84,7 @@ def get_page_problems(html_doc: str) -> List[ProblemInfo]:
         html_doc: the HTML document to parse.
 
     Returns:
-        a list of all solved problems in the given page.
+        all solved problems' data in the given page.
     """
     soup = BeautifulSoup(html_doc, 'html.parser')
     table_body = soup.find('table', class_='problem_list').find('tbody')
@@ -97,9 +97,9 @@ def get_page_problems(html_doc: str) -> List[ProblemInfo]:
         id = re.match(r'/problems/(.+)', href_link).group(1)
 
         # Get other stats
-        problem_data = list(row.stripped_strings)
-        name = problem_data[0]
-        difficulty = problem_data[-1]
+        row_data = list(row.stripped_strings)
+        name = row_data[0]
+        difficulty = row_data[-1]
         if '-' in difficulty:
             difficulty = difficulty.split()[-1]
         difficulty = float(difficulty)

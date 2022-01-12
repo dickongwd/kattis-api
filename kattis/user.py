@@ -1,8 +1,13 @@
 import requests
 
-from typing import Tuple, Iterator
+from typing import Tuple, List
 
-from .doc_parser import get_csrf_token, get_rank_score, get_page_problems, ProblemInfo
+from .doc_parser import (
+    get_csrf_token,
+    get_rank_score,
+    get_page_problems,
+    ProblemData
+)
 from .constants import KATTIS_URL
 
 
@@ -16,11 +21,10 @@ class KattisUser:
     def __init__(self, username, password):
         self._username = username
         self._session = requests.Session()
-        # TEMP
         self._auth(username, password)
     
     
-    def get_stats(self) -> Tuple[int, int]:
+    def stats(self) -> Tuple[int, float]:
         """Gets the rank and score of the user.
 
         Returns:
@@ -32,23 +36,24 @@ class KattisUser:
         return rank, score
     
     
-    def get_solved_problems(self) -> Iterator[ProblemInfo]:
+    def solved_problems(self) -> List[ProblemData]:
         """Gets the list of all problems solved by the user.
 
         Returns:
-            all solved problems by the user.
+            all solved problems' data by the user.
         """
         problem_list_url = f'{KATTIS_URL}/problems?show_solved=on&show_tried=off&show_untried=off'
         page_id = 0
+
+        problem_list = []
         while True:
             res = self._session.get(f'{problem_list_url}&page={page_id}')
-            problem_list = get_page_problems(res.content.decode('utf-8'))
-            for problem_info in problem_list:
-                yield problem_info
-
-            if len(problem_list) == 0:
+            page_problems = get_page_problems(res.content.decode('utf-8'))
+            problem_list.extend(page_problems)
+            if len(page_problems) == 0:
                 break
             page_id += 1
+        return problem_list
 
 
     def _auth(self, username: str, password: str) -> requests.Response:
