@@ -29,6 +29,7 @@ def main():
             notion.create_page(NOTION_DATABASE_ID, 
                                problem['name'], problem['solve_date'],
                                problem['id'], problem['difficulty'])
+    print()
     print('Update done!')
 
      

@@ -1,4 +1,9 @@
-from re import sub
+"""
+kattis.user
+-----------
+
+This module provides functionality for Kattis users to retrieve their data.
+"""
 import requests
 
 from typing import Tuple, List, Iterator
@@ -85,6 +90,9 @@ class KattisUser:
 
         Args:
             problem_id: the problem ID to query
+        
+        Returns:
+            list of user submissions
         """
         url = f'https://open.kattis.com/users/{self._username}/submissions/{problem_id}'
         page_id = 0

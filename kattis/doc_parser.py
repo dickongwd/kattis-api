@@ -8,7 +8,7 @@ obtained from scraping the Kattis site.
 import re
 
 from bs4 import BeautifulSoup
-from typing import Tuple, TypedDict, List
+from typing import Tuple, TypedDict, List, Iterator
 from datetime import datetime
 
 
@@ -37,8 +37,6 @@ def get_csrf_token(html_doc: str) -> str:
     Returns:
         the CSRF token as a string.
     """
-    # TODO: errors/checks for valid response, or if csrf token is not present
-
     soup = BeautifulSoup(html_doc, 'html.parser')
     return soup.find('input', {'name': 'csrf_token'})['value']
 
@@ -80,7 +78,7 @@ def get_rank_score(html_doc: str) -> Tuple[int, float]:
     return int(strings[2]), float(strings[3])
 
 
-def get_page_problems(html_doc: str) -> List[ProblemData]:
+def get_page_problems(html_doc: str) -> Iterator[ProblemData]:
     """Parses a HTML document string to obtain the displayed list of problems.
     
     The table holding the list of problems is assumed to have:
@@ -130,7 +128,6 @@ def get_page_submissions(html_doc: str) -> List[SubmissionData]:
     Args:
         html_doc: the HTML document to parse.
 
-
     Returns:
         list of all submissions for a given problem
     """
@@ -144,7 +141,7 @@ def get_page_submissions(html_doc: str) -> List[SubmissionData]:
         row_data = list(row.stripped_strings)
         id = row_data[0]
         date = datetime.fromisoformat(row_data[1])
-        accepted = True if 'Accepted' in row_data[3] else False
+        accepted = True if row_data[3] in ['Accepted', 'Accepted (100)'] else False
 
         submissions.append({
             'id': id,

@@ -28,7 +28,6 @@ class Notion:
         """Creates a page (or entry) in the Notion database.
 
         Each entry represents each solved Kattis problem.
-        Notion database schema - (Name: title, Date: date)
 
         Args:
             database_id: ID of database to create page at
@@ -71,7 +70,7 @@ class Notion:
             }
         }
         res = requests.post(
-            NOTION_API_URL,
+            f'{NOTION_API_URL}/pages',
             headers={
                 'Authorization': f'Bearer {self._api_key}',
                 'Content-Type': 'application/json',
