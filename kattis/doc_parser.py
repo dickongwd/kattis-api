@@ -98,7 +98,6 @@ def get_page_problems(html_doc: str) -> List[ProblemData]:
     table_body = soup.find('table', class_='problem_list').find('tbody')
     rows = table_body.find_all('tr')
 
-    problem_list = []
     for row in rows:
         # Get problem unique id
         href_link = row.find('td', class_='name_column').find('a')['href']
@@ -112,16 +111,14 @@ def get_page_problems(html_doc: str) -> List[ProblemData]:
             difficulty = difficulty.split()[-1]
         difficulty = float(difficulty)
 
-        problem_list.append({
+        yield {
             'id': id,
             'name': name,
             'difficulty': difficulty,
             'solve_date': ''
-        })
-    return problem_list
+        }
 
 
-# TODO: type annotation for return
 def get_page_submissions(html_doc: str) -> List[SubmissionData]:
     """Parses a HTML document string to obtain submission data for a problem.
 
@@ -131,7 +128,11 @@ def get_page_submissions(html_doc: str) -> List[SubmissionData]:
         (ID, DATE, PROBLEM, STATUS, CPU, LANG)
 
     Args:
-        problem_id: the problem ID to query
+        html_doc: the HTML document to parse.
+
+
+    Returns:
+        list of all submissions for a given problem
     """
     soup = BeautifulSoup(html_doc, 'html.parser')
     table_body = soup.find('table', class_='table-submissions').find('tbody')
@@ -151,3 +152,17 @@ def get_page_submissions(html_doc: str) -> List[SubmissionData]:
             'accepted': accepted
         })
     return submissions
+
+
+def get_page_problem_count(html_doc: str) -> int:
+    """Gets the number of problems listed in a given HTML document.
+
+    Args:
+        html_doc: the HTML document to parse.
+    
+    Returns:
+        the number of problems listed in the given page.
+    """
+    soup = BeautifulSoup(html_doc, 'html.parser')
+    table_body = soup.find('table', class_='problem_list').find('tbody')
+    return len(table_body.find_all('tr'))

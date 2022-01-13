@@ -1,3 +1,11 @@
+"""
+notion.notion
+-------------
+
+Provides helper functions as an interface to the Notion API.
+This module is created specifically for a specific Notion table database schema:
+    (Name: title, Date: date, ID: text, Difficulty: number)
+"""
 import json
 import time
 import requests
@@ -15,51 +23,65 @@ class Notion:
         self._api_key = api_key
     
     
-    def create_page(self, database_id: str, name: str, date: str):
+    def create_page(self, database_id: str, name: str, date: str, id: str,
+                    difficulty: float):
         """Creates a page (or entry) in the Notion database.
 
         Each entry represents each solved Kattis problem.
         Notion database schema - (Name: title, Date: date)
 
         Args:
+            database_id: ID of database to create page at
             name: name of solved Kattis problem
             date: earliest date problem was solved
+            id: Kattis problem ID
+            difficulty: difficulty/score of problem
 
         Returns:
             True if the creation was successful. False otherwise.
         """
         post_data = {
-            "parent": {"database_id": database_id},
-            "properties": {
-                "Name": {
-                    "title": [
+            'parent': {'database_id': database_id},
+            'properties': {
+                'Name': {
+                    'title': [
                         {
-                            "text": {
-                                "content": name
+                            'text': {
+                                'content': name
                             }
                         }
                     ]
                 },
-                "Date": {
-                    "date": {
-                        "start": date
+                'Date': {
+                    'date': {
+                        'start': date
                     }
+                },
+                'ID': {
+                    'rich_text': [
+                        {
+                            'type': 'text',
+                            'text': {'content': id}
+                        }
+                    ]
+                },
+                'Difficulty': {
+                    'number': difficulty
                 }
             }
         }
-        res = requests.request(
-            "POST",
+        res = requests.post(
             NOTION_API_URL,
             headers={
-                "Authorization": f"Bearer {self._api_key}",
-                "Content-Type": "application/json",
-                "Notion-Version": "2021-08-16"
+                'Authorization': f'Bearer {self._api_key}',
+                'Content-Type': 'application/json',
+                'Notion-Version': '2021-08-16'
             },
             data=json.dumps(post_data)
         )
-        json_reply = json.loads(res.content.decode("utf-8"))
+        json_reply = json.loads(res.content.decode('utf-8'))
 
-        if res.status_code == 200 and json_reply["object"] == "page":
+        if res.status_code == 200 and json_reply['object'] == 'page':
             return True
         # Rate Limit
         elif res.status_code == 429:
