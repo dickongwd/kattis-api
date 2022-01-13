@@ -17,19 +17,40 @@ def main():
 
     notion = Notion(notion_api_key)
     
-    print('Authenticating Kattis...')
+    print('Logging in to Kattis...', end=' ', flush=True)
     user = KattisUser(username, password)
-    print('Logged in successfully!')
+    print('logged in successfully!')
 
-    with open('solve.txt', 'w') as fp:
-        for problem in tqdm(user.solved_problems(), desc='Querying problems',
-                            total=user.problem_count()):
-            fp.write(str(problem))
-            fp.write('\n')
-            notion.create_page(NOTION_DATABASE_ID, 
-                               problem['name'], problem['solve_date'],
-                               problem['id'], problem['difficulty'])
-    print()
+    # Querying submissions
+    # Submission dates listed on Kattis are assumed to be descending order
+    # Most recent submissions first
+    solve_dates = {}
+    for sub in tqdm(user.submissions(),
+                    desc='Querying submissions',
+                    unit='submissions'):
+        if not sub['accepted']:
+            continue
+        solve_dates[sub['problem_id']] = sub['date'].strftime('%Y-%m-%d')
+    
+    # Querying problems
+    problem_data = []
+    for p in tqdm(user.solved_problems(),
+                  desc='Querying problems',
+                  unit='problems'):
+        if p['id'] not in solve_dates:
+            continue
+        problem_data.append({
+            'name': p['name'],
+            'date': solve_dates[p['id']],
+            'id': p['id'],
+            'difficulty': p['difficulty']
+        })
+
+    # Querying Notion API
+    for p in tqdm(problem_data,
+                  desc='Querying Notion API'):
+        notion.create_page(NOTION_DATABASE_ID, 
+                           p['name'], p['date'], p['id'], p['difficulty'])
     print('Update done!')
 
      

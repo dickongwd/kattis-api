@@ -8,7 +8,7 @@ obtained from scraping the Kattis site.
 import re
 
 from bs4 import BeautifulSoup
-from typing import Tuple, TypedDict, List, Iterator
+from typing import Tuple, TypedDict, Iterator
 from datetime import datetime
 
 
@@ -16,12 +16,12 @@ class ProblemData(TypedDict):
     id: str
     name: str
     difficulty: float
-    solve_date: str
 
 
 class SubmissionData(TypedDict):
-    id: int
+    sub_id: str
     date: datetime
+    problem_id: str
     accepted: bool
 
 
@@ -113,12 +113,11 @@ def get_page_problems(html_doc: str) -> Iterator[ProblemData]:
             'id': id,
             'name': name,
             'difficulty': difficulty,
-            'solve_date': ''
         }
 
 
-def get_page_submissions(html_doc: str) -> List[SubmissionData]:
-    """Parses a HTML document string to obtain submission data for a problem.
+def get_page_submissions(html_doc: str) -> Iterator[SubmissionData]:
+    """Parses a HTML document string to obtain submission data.
 
     Table holding submissions data is assumed to have:
         <table class="table-submissions ...">
@@ -129,40 +128,29 @@ def get_page_submissions(html_doc: str) -> List[SubmissionData]:
         html_doc: the HTML document to parse.
 
     Returns:
-        list of all submissions for a given problem
+        all submissions in the given page.
     """
     soup = BeautifulSoup(html_doc, 'html.parser')
     table_body = soup.find('table', class_='table-submissions').find('tbody')
     rows = table_body.find_all('tr')
 
-    submissions = []
     for row in rows:
+        # Get problem id
+        href_link = row.find('td', id='problem_title').find('a')['href']
+        problem_id = re.match(r'/problems/(.+)', href_link).group(1)
+
         # Get submission stats
         row_data = list(row.stripped_strings)
-        id = row_data[0]
+        sub_id = row_data[0]
         date = datetime.fromisoformat(row_data[1])
         accepted = True if row_data[3] in ['Accepted', 'Accepted (100)'] else False
 
-        submissions.append({
-            'id': id,
+        yield {
+            'sub_id': sub_id,
             'date': date,
+            'problem_id': problem_id,
             'accepted': accepted
-        })
-    return submissions
-
-
-def get_page_problem_count(html_doc: str) -> int:
-    """Gets the number of problems listed in a given HTML document.
-
-    Args:
-        html_doc: the HTML document to parse.
-    
-    Returns:
-        the number of problems listed in the given page.
-    """
-    soup = BeautifulSoup(html_doc, 'html.parser')
-    table_body = soup.find('table', class_='problem_list').find('tbody')
-    return len(table_body.find_all('tr'))
+        }
 
 
 def contains_user_info(html_doc: str) -> bool:

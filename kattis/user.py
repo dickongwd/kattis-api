@@ -6,7 +6,7 @@ This module provides functionality for Kattis users to retrieve their data.
 """
 import requests
 
-from typing import Tuple, List, Iterator
+from typing import Tuple, Iterator, Dict
 
 from .doc_parser import (
     contains_user_info,
@@ -14,7 +14,6 @@ from .doc_parser import (
     get_rank_score,
     get_page_problems,
     get_page_submissions,
-    get_page_problem_count,
     ProblemData,
     SubmissionData
 )
@@ -62,73 +61,37 @@ class KattisUser:
             res = self._session.get(f'{url}&page={page_id}')
             for problem in get_page_problems(res.text):
                 empty_page = False
-                problem['solve_date'] = self.solve_date(problem['id'])
                 yield problem
 
             if empty_page:
                 break
             page_id += 1
-    
+            
 
-    def solve_date(self, problem_id: str) -> str:
-        """Get the date of the first accepted solve for a given problem.
-        
-        Args:
-            problem_id: the problem ID to query
-
-        Returns:
-            date of earliest accepted submission, 'YYYY-MM-DD'
-        """
-        submissions = self.submissions(problem_id)
-        submissions = list(filter(lambda s : s['accepted'], submissions))
-        submissions.reverse()
-        if len(submissions) == 0:
-            return None
-        return submissions[0]['date'].strftime('%Y-%m-%d')
-
-
-    def submissions(self, problem_id: str) -> List[SubmissionData]:
+    def submissions(self) -> Iterator[SubmissionData]:
         """Get submission data of a given problem.
 
         Args:
-            problem_id: the problem ID to query
+            problem_id: the problem ID to query.
         
         Returns:
-            list of user submissions
+            all user submissions.
         """
-        url = f'https://open.kattis.com/users/{self._username}/submissions/{problem_id}'
+        url = f'https://open.kattis.com/users/{self._username}'
         page_id = 0
 
-        submissions = []
         while True:
+            empty_page = True
+
             res = self._session.get(f'{url}?page={page_id}')
-            page_submissions = get_page_submissions(res.text)
-            submissions.extend(page_submissions)
-            if len(page_submissions) == 0:
+            for sub in get_page_submissions(res.text):
+                empty_page = False
+                yield sub
+
+            if empty_page:
                 break
             page_id += 1
-        return submissions
     
-    
-    def problem_count(self) -> int:
-        """Gets the total number of solved problems.
-
-        Returns:
-            number of solved problems.
-        """
-        url = f'{KATTIS_URL}/problems?show_solved=on&show_tried=off&show_untried=off'
-        total = 0
-        page_id = 0
-
-        while True:
-            res = self._session.get(f'{url}&page={page_id}')
-            page_count = get_page_problem_count(res.text)
-            total += page_count
-            if page_count == 0:
-                break
-            page_id += 1
-        return total
-
 
     def _auth(self, username: str, password: str) -> bool:
         """Logs a user into the site.
