@@ -163,3 +163,21 @@ def get_page_problem_count(html_doc: str) -> int:
     soup = BeautifulSoup(html_doc, 'html.parser')
     table_body = soup.find('table', class_='problem_list').find('tbody')
     return len(table_body.find_all('tr'))
+
+
+def contains_user_info(html_doc: str) -> bool:
+    """Checks whether user info is displayed in the page.
+
+    Checks for <div class="user-infobox-name"> and
+               <div class="user-infobox-status">.
+
+    Args:
+        html_doc: the HTML document to parse.
+    
+    Returns:
+        True if user info is displayed. False otherwise.
+    """
+    soup = BeautifulSoup(html_doc, 'html.parser')
+    name_div = soup.find('div', class_='user-infobox-name')
+    status_div = soup.find('div', class_='user-infobox-status')
+    return name_div and status_div

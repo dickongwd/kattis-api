@@ -9,6 +9,7 @@ import requests
 from typing import Tuple, List, Iterator
 
 from .doc_parser import (
+    contains_user_info,
     get_csrf_token,
     get_rank_score,
     get_page_problems,
@@ -30,7 +31,8 @@ class KattisUser:
     def __init__(self, username, password):
         self._username = username
         self._session = requests.Session()
-        self._auth(username, password)
+        if not self._auth(username, password):
+            raise AuthError('Failed to authenticate with Kattis')
     
     
     def stats(self) -> Tuple[int, float]:
@@ -128,7 +130,7 @@ class KattisUser:
         return total
 
 
-    def _auth(self, username: str, password: str) -> requests.Response:
+    def _auth(self, username: str, password: str) -> bool:
         """Logs a user into the site.
 
         Args:
@@ -138,8 +140,6 @@ class KattisUser:
         Returns:
             the HTTP POST response after authenticating user.
         """
-        # TODO: check if auth was successful/unsuccessful
-
         url = f'{KATTIS_URL}/login/email'
         res = self._session.get(url)
         payload = {
@@ -149,5 +149,12 @@ class KattisUser:
             'submit': 'Submit'
         }
         res = self._session.post(url, data=payload)
-        return res
+
+        # Checking if authentication was successful
+        res = self._session.get(KATTIS_URL)
+        return contains_user_info(res.text)
+
+
+class AuthError(Exception):
+    pass
     
