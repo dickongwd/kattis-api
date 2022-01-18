@@ -6,7 +6,7 @@ from tqdm import tqdm
 from kattis.user import KattisUser
 from notion.database import Notion
 
-NOTION_DATABASE_ID = "05b8074c2b394663920fd14b635e50c7"
+NOTION_DATABASE_ID = '05b8074c2b394663920fd14b635e50c7'
 
 
 def main():
@@ -33,13 +33,13 @@ def main():
         solve_dates[sub['problem_id']] = sub['date'].strftime('%Y-%m-%d')
     
     # Querying problems
-    problem_data = []
+    problems = []
     for p in tqdm(user.solved_problems(),
                   desc='Querying problems',
                   unit='problems'):
         if p['id'] not in solve_dates:
             continue
-        problem_data.append({
+        problems.append({
             'name': p['name'],
             'date': solve_dates[p['id']],
             'id': p['id'],
@@ -47,7 +47,7 @@ def main():
         })
 
     print('Updating Notion database...')
-    notion.update(problem_data)
+    notion.update(problems)
     print('Update done!')
 
      

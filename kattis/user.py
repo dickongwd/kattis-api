@@ -6,7 +6,7 @@ This module provides functionality for Kattis users to retrieve their data.
 """
 import requests
 
-from typing import Tuple, Iterator, Dict
+from typing import Tuple, Iterator
 
 from .doc_parser import (
     contains_user_info,
@@ -15,7 +15,7 @@ from .doc_parser import (
     get_page_problems,
     get_page_submissions,
     ProblemData,
-    SubmissionData
+    Submission
 )
 from .constants import KATTIS_URL
 
@@ -24,21 +24,20 @@ class KattisUser:
     """Represents an authenticated Kattis user.
 
     Attributes:
-        _username: username of the user.
-        _session: a requests session to provide logged in persistence.
+        _username: Username of the user.
+        _session: A requests session to provide logged in persistence.
     """
     def __init__(self, username, password):
         self._username = username
         self._session = requests.Session()
-        if not self._auth(username, password):
-            raise AuthError('Failed to authenticate with Kattis')
+        self._auth(username, password)
     
     
     def stats(self) -> Tuple[int, float]:
         """Gets the rank and score of the user.
 
         Returns:
-            rank and score of the user.
+            Rank and score of the user.
         """
         url = f'{KATTIS_URL}/users/{self._username}'
         res = self._session.get(url)
@@ -50,7 +49,7 @@ class KattisUser:
         """Gets the list of all problems solved by the user.
 
         Returns:
-            all solved problems' data by the user.
+            All solved problems' data by the user.
         """
         url = f'{KATTIS_URL}/problems?show_solved=on&show_tried=off&show_untried=off'
         page_id = 0
@@ -68,14 +67,11 @@ class KattisUser:
             page_id += 1
             
 
-    def submissions(self) -> Iterator[SubmissionData]:
+    def submissions(self) -> Iterator[Submission]:
         """Get submission data of a given problem.
-
-        Args:
-            problem_id: the problem ID to query.
         
         Returns:
-            all user submissions.
+            All user submissions.
         """
         url = f'https://open.kattis.com/users/{self._username}'
         page_id = 0
@@ -101,7 +97,10 @@ class KattisUser:
             password: password credential to authenticate.
 
         Returns:
-            the HTTP POST response after authenticating user.
+            None.
+        
+        Raises:
+            AuthError: If authentication was unsuccessful.
         """
         url = f'{KATTIS_URL}/login/email'
         res = self._session.get(url)
@@ -115,7 +114,8 @@ class KattisUser:
 
         # Checking if authentication was successful
         res = self._session.get(KATTIS_URL)
-        return contains_user_info(res.text)
+        if not contains_user_info(res.text):
+            raise AuthError(Exception)
 
 
 class AuthError(Exception):

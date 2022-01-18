@@ -28,10 +28,6 @@ class Problem(TypedDict):
     difficulty: float
 
 
-class NotionAPIError(Exception):
-    pass
-
-
 class Notion:
     """Represents a Notion integration.
 
@@ -56,14 +52,8 @@ class Notion:
         Returns:
             List of problems updated.
         """
-        old_ids = set()
-        new_ids = set()
-
-        old_problems = self.query()
-        for p in old_problems:
-            old_ids.add(p['id'])
-        for p in new_problems:
-            new_ids.add(p['id'])
+        old_ids = {p['id'] for p in self.query()}
+        new_ids = {p['id'] for p in new_problems}
 
         updated_ids = new_ids.difference(old_ids)
         updated_problems = []
@@ -132,7 +122,6 @@ class Notion:
 
         # Rate Limit
         if res.status_code == 429:
-            print('hit too fast create page')
             time.sleep(1)
             self.add(problem)
         elif not (res.status_code == 200 and json_res['object'] == 'page'):
@@ -185,10 +174,10 @@ class Notion:
             })
         
         if json_res['has_more']:
-            try:
-                problems.extend(
-                    self.query(start_cursor=json_res['next_cursor']))
-            # TODO
-            except NotionAPIError:
-                pass
+            problems.extend(
+                self.query(start_cursor=json_res['next_cursor']))
         return problems
+
+
+class NotionAPIError(Exception):
+    pass

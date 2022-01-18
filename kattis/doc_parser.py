@@ -18,7 +18,7 @@ class ProblemData(TypedDict):
     difficulty: float
 
 
-class SubmissionData(TypedDict):
+class Submission(TypedDict):
     sub_id: str
     date: datetime
     problem_id: str
@@ -32,10 +32,10 @@ def get_csrf_token(html_doc: str) -> str:
         <input type="hidden" name="csrf_token" value="<token>">
 
     Args:
-        html_doc: the HTML document to parse.
+        html_doc: The HTML document to parse.
 
     Returns:
-        the CSRF token as a string.
+        The CSRF token as a string.
     """
     soup = BeautifulSoup(html_doc, 'html.parser')
     return soup.find('input', {'name': 'csrf_token'})['value']
@@ -67,10 +67,10 @@ def get_rank_score(html_doc: str) -> Tuple[int, float]:
         </div>
     
     Args:
-        html_doc: the HTML document to parse.
+        html_doc: The HTML document to parse.
 
     Returns:
-        the rank and score of the user
+        The rank and score of the user.
     """
     soup = BeautifulSoup(html_doc, 'html.parser')
     table = soup.find('div', class_='rank')
@@ -87,10 +87,10 @@ def get_page_problems(html_doc: str) -> Iterator[ProblemData]:
         (NAME, TOTAL, ACC., RATIO, FASTEST, TOTAL, ACC. RATIO, DIFFICULTY)
 
     Args:
-        html_doc: the HTML document to parse.
+        html_doc: The HTML document to parse.
 
-    Returns:
-        all solved problems' data in the given page.
+    Yields:
+        All solved problems' data in the given page.
     """
     soup = BeautifulSoup(html_doc, 'html.parser')
     table_body = soup.find('table', class_='problem_list').find('tbody')
@@ -116,7 +116,7 @@ def get_page_problems(html_doc: str) -> Iterator[ProblemData]:
         }
 
 
-def get_page_submissions(html_doc: str) -> Iterator[SubmissionData]:
+def get_page_submissions(html_doc: str) -> Iterator[Submission]:
     """Parses a HTML document string to obtain submission data.
 
     Table holding submissions data is assumed to have:
@@ -127,8 +127,8 @@ def get_page_submissions(html_doc: str) -> Iterator[SubmissionData]:
     Args:
         html_doc: the HTML document to parse.
 
-    Returns:
-        all submissions in the given page.
+    Yields:
+        All submissions in the given page.
     """
     soup = BeautifulSoup(html_doc, 'html.parser')
     table_body = soup.find('table', class_='table-submissions').find('tbody')
@@ -160,7 +160,7 @@ def contains_user_info(html_doc: str) -> bool:
                <div class="user-infobox-status">.
 
     Args:
-        html_doc: the HTML document to parse.
+        html_doc: The HTML document to parse.
     
     Returns:
         True if user info is displayed. False otherwise.
