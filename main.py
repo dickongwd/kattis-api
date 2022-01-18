@@ -4,7 +4,7 @@ from base64 import b64decode
 from tqdm import tqdm
 
 from kattis.user import KattisUser
-from notion.notion import Notion
+from notion.database import Notion
 
 NOTION_DATABASE_ID = "05b8074c2b394663920fd14b635e50c7"
 
@@ -15,8 +15,8 @@ def main():
                 .encode('utf-8')).decode('utf-8')
     notion_api_key = os.environ.get('NOTION_API_KEY')
 
-    notion = Notion(notion_api_key)
-    
+    notion = Notion(notion_api_key, NOTION_DATABASE_ID)
+
     print('Logging in to Kattis...', end=' ', flush=True)
     user = KattisUser(username, password)
     print('logged in successfully!')
@@ -46,11 +46,8 @@ def main():
             'difficulty': p['difficulty']
         })
 
-    # Querying Notion API
-    for p in tqdm(problem_data,
-                  desc='Querying Notion API'):
-        notion.create_page(NOTION_DATABASE_ID, 
-                           p['name'], p['date'], p['id'], p['difficulty'])
+    print('Updating Notion database...')
+    notion.update(problem_data)
     print('Update done!')
 
      
