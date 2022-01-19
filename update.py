@@ -1,4 +1,5 @@
 import os
+import sys
 
 from base64 import b64decode
 from tqdm import tqdm
@@ -12,7 +13,7 @@ NOTION_DATABASE_ID = '05b8074c2b394663920fd14b635e50c7'
 def main():
     username = os.environ.get('KATTIS_USER')
     password = b64decode(os.environ.get('KATTIS_PASS')
-                .encode('utf-8')).decode('utf-8')
+               .encode('utf-8')).decode('utf-8')
     notion_api_key = os.environ.get('NOTION_API_KEY')
 
     notion = Notion(notion_api_key, NOTION_DATABASE_ID)
@@ -26,16 +27,16 @@ def main():
     # Most recent submissions first
     solve_dates = {}
     for sub in tqdm(user.submissions(),
-                    desc='Querying submissions',
+                    desc='Getting submissions',
                     unit='submissions'):
         if not sub['accepted']:
             continue
-        solve_dates[sub['problem_id']] = sub['date'].strftime('%Y-%m-%d')
+        solve_dates[sub['problem_id']] = sub['date']
     
     # Querying problems
     problems = []
     for p in tqdm(user.solved_problems(),
-                  desc='Querying problems',
+                  desc='Getting solved problems',
                   unit='problems'):
         if p['id'] not in solve_dates:
             continue
@@ -45,9 +46,14 @@ def main():
             'id': p['id'],
             'difficulty': p['difficulty']
         })
-
-    print('Updating Notion database...')
-    notion.update(problems)
+    
+    # Updating Notion table
+    # Functionality is equivalent to Notion.update()
+    # Re-written here to display progress bar
+    for p in tqdm(notion.query_updates(problems),
+                  desc='Updating Notion database',
+                  unit='entry'):
+        notion.add(p)
     print('Update done!')
 
      

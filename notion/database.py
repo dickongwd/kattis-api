@@ -52,16 +52,9 @@ class Notion:
         Returns:
             List of problems updated.
         """
-        old_ids = {p['id'] for p in self.query()}
-        new_ids = {p['id'] for p in new_problems}
-
-        updated_ids = new_ids.difference(old_ids)
-        updated_problems = []
-        for p in new_problems:
-            if p['id'] in updated_ids:
-                self.add(p)
-                updated_problems.append(p)
-                print('Updated', p['id'])
+        updated_problems = self.query_updates(new_problems)
+        for p in updated_problems:
+            self.add(p)
         return updated_problems
             
 
@@ -177,6 +170,26 @@ class Notion:
             problems.extend(
                 self.query(start_cursor=json_res['next_cursor']))
         return problems
+    
+    
+    def query_updates(self, new_problems: List[Problem]) -> List[Problem]:
+        """Queries the database to find out what needs updating.
+
+        Compares data obtained from Notion with the new problem list
+        to find the delta.
+
+        Args:
+            new_problems: Updated list of solved problems.
+
+        Returns:
+            List of problems that needs updating.
+        """ 
+        old_ids = {p['id'] for p in self.query()}
+        new_ids = {p['id'] for p in new_problems}
+
+        updated_ids = new_ids.difference(old_ids)
+        updated_problems = [p for p in new_problems if p['id'] in updated_ids]
+        return updated_problems 
 
 
 class NotionAPIError(Exception):

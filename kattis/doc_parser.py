@@ -20,7 +20,7 @@ class ProblemData(TypedDict):
 
 class Submission(TypedDict):
     sub_id: str
-    date: datetime
+    date: str
     problem_id: str
     accepted: bool
 
@@ -142,7 +142,7 @@ def get_page_submissions(html_doc: str) -> Iterator[Submission]:
         # Get submission stats
         row_data = list(row.stripped_strings)
         sub_id = row_data[0]
-        date = datetime.fromisoformat(row_data[1])
+        date = datetime.fromisoformat(row_data[1]).strftime('%Y-%m-%d')
         accepted = True if row_data[3] in ['Accepted', 'Accepted (100)'] else False
 
         yield {
