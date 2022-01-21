@@ -6,16 +6,15 @@ from tqdm import tqdm
 from kattis.user import KattisUser
 from notion.database import Notion
 
-NOTION_DATABASE_ID = '05b8074c2b394663920fd14b635e50c7'
-
 
 def main():
     username = os.environ.get('KATTIS_USER')
     password = b64decode(os.environ.get('KATTIS_PASS')
                .encode('utf-8')).decode('utf-8')
     notion_api_key = os.environ.get('NOTION_API_KEY')
+    notion_database_id = os.environ.get('NOTION_DATABASE_ID')
 
-    notion = Notion(notion_api_key, NOTION_DATABASE_ID)
+    notion = Notion(notion_api_key, notion_database_id)
 
     print('Logging in to Kattis...', end=' ', flush=True)
     user = KattisUser(username, password)
